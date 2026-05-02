@@ -1,8 +1,8 @@
 # Assignment 3 - Complete Documentation
 
-**Student Name**: [Your Full Name]  
-**Student ID**: [Your ID]  
-**Date Submitted**: [Submission Date]
+**Student Name**: [Zeed alhodaib]  
+**Student ID**: [445050289]  
+**Date Submitted**: [May 2 2026]
 
 ---
 
@@ -16,7 +16,7 @@
 
 **Video Link**: [Paste your personal Gmail Google Drive link here]
 
-**Video filename**: `[YourStudentID]_Assignment3_Synchronization.mp4`
+**Video filename**: `445050289]_Assignment3_Synchronization.mp4`
 
 **Verification**:
 - [ ] Link is accessible (tested in incognito mode)
@@ -31,43 +31,29 @@
 
 Document your development process with **minimum 3 entries** showing progression:
 
-### Entry 1 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
+### Entry 1 - [2 May,5]What I implemented: Basic class structure and shared resource counters.
+Challenges encountered: Managing shared variables without corruption.
+How I solved it: Introduced a shared class SharedResources with static members.
+Testing approach: Printed counter values after a single process run.
+Time spent: 1 hour.
 
 ---
 
-### Entry 2 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
+### Entry 2 - [2May, 6]
+What I implemented: Thread synchronization using ReentrantLock and Semaphore.
+Challenges encountered: Compiler errors related to bracket placement and illegal start of expressions.
+How I solved it: Carefully restructured the class hierarchy and ensured all try-finally blocks were correctly closed.
+Testing approach: Ran the program multiple times to check for race conditions.
+Time spent: o.5 hours.
 
 ---
 
 ### Entry 3 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
-
+What I implemented: ANSI color output and final statistical report with Student ID.
+Challenges encountered: Formatting the output table for multiple processes.
+How I solved it: Used String.format to align columns and added specialized color codes for readability.
+Testing approach: Final verification of mathematical accuracy (Total waiting time / Number of processes).
+Time spent: 0.5 hours.
 ---
 
 ### Entry 4 - [Date, Time]
@@ -106,7 +92,7 @@ Document your development process with **minimum 3 entries** showing progression
 
 **Your Answer**:
 
-[Your answer here - 4-6 sentences with code examples]
+The shared counter contextSwitchCount was changed by several threads in the original code without protection, which resulted in lost updates when two threads increased it at the same time. There was also a race situation in the executionLog list that may result in a ConcurrentModificationException if two threads inserted messages simultaneously. Program crashes and inaccurate simulation results would arise from these problems.
 
 ---
 
@@ -115,7 +101,7 @@ Document your development process with **minimum 3 entries** showing progression
 
 **Your Answer**:
 
-[Your answer here - explain your implementation choices]
+A mutual exclusion lock (mutex) called a reentrant lock makes sure that only one thread can access a certain code block at a time. I used it to keep the logs and counters safe. To ensure that only one process can be "running" even though several threads are ready, I utilized a semaphore with one permit to represent the CPU.
 
 ---
 
@@ -124,8 +110,7 @@ Document your development process with **minimum 3 entries** showing progression
 
 **Your Answer**:
 
-[Your answer here - reference try-finally blocks, lock ordering, etc.]
-
+[When threads wait indefinitely for one another to release locks, deadlock occurs. By utilizing try-finally blocks to ensure lock release in every scenario, I was able to avoid issue. In order to ensure that a thread never attempts to obtain a second lock while holding a first one, which violates the circular wait condition, I also avoided nested locking.
 ---
 
 ### Question 4: Lock Granularity Design Decision 
@@ -136,22 +121,21 @@ Document your development process with **minimum 3 entries** showing progression
 - Given that the three counters are independent, which approach provides better concurrency and why?
 
 **Your Answer**:
-
-[Your answer here - explain coarse-grained vs fine-grained locking, independence of counters, concurrency implications. Show understanding of when to use each approach. 5-8 sentences expected.]
+For each of the three counters, I utilized a single coarse-grained lock. Because these variables are updated frequently and using separate locks would add needless complexity and overhead, I took this decision. The performance increase in this simulation would be minimal, even though fine-grained locking improves concurrency because the counters are independent. In exchange, coarse-grained locking ensures complete data consistency and is far safer and simpler to troubleshoot.
 
 ---
 
 ## Part 3: Synchronization Analysis (1 mark)
 
-### Critical Section #1: Counter Variables
-
-**Which variables**: 
-
-**Why they need protection**: 
-
-**Synchronization mechanism used**: 
-
-**Code snippet**:
+Part 3: Synchronization Analysis (1 mark)
+Critical Section #1: Counter Variables
+Which variables: contextSwitchCount, completedProcessCount, totalWaitingTime.
+Why they need protection: Multiple threads perform read-modify-write operations on these shared variables.
+Synchronization mechanism used: ReentrantLock.
+Code snippet:public static void incrementContextSwitch() {
+    lock.lock();
+    try { contextSwitchCount++; } finally { lock.unlock(); }
+}
 ```java
 // Paste your implementation here
 ```
@@ -160,68 +144,49 @@ Document your development process with **minimum 3 entries** showing progression
 
 ---
 
-### Critical Section #2: Execution Log
-
-**What resource**: 
-
-**Why it needs protection**: 
-
-**Synchronization mechanism used**: 
-
-**Code snippet**:
-```java
-// Paste your implementation here
-```
-
+Critical Section #2: Execution Log
+What resource: List<String> executionLog.
+Why it needs protection: Adding to a shared list is not a thread-safe operation.
+Synchronization mechanism used: ReentrantLock.
+Code snippet:
+public static void logExecution(String message) {
+    lock.lock();
+    try { executionLog.add(message); } finally { lock.unlock(); }
+}
 **Justification**: 
 
 ---
-
-### Critical Section #3: CPU Semaphore
-
-**Purpose of semaphore**: 
-
-**Number of permits and why**: 
-
-**Where implemented**: 
-
-**Code snippet**:
-```java
-// Paste your implementation here
-```
+Critical Section #3: CPU Semaphore
+Purpose of semaphore: To simulate a single-core CPU execution.
+Number of permits and why: 1 permit, because only one process can occupy the CPU at a time.
+Where implemented: Inside the run() method of the Process class.
+Code snippet:
+SharedResources.cpuSemaphore.acquire();
+// ... critical execution logic ...
+SharedResources.cpuSemaphore.release();
 
 **Effect on program behavior**: 
 
 ---
-
-## Part 4: Testing and Verification (2 marks)
-
-### Test 1: Consistency Check
-**What I tested**: Running program multiple times to verify consistent results
-
-**Testing procedure**: 
-```bash
-# Commands used (run the program at least 5 times)
-```
+Part 4: Testing and Verification (2 marks)
+Test 1: Consistency Check
+What I tested: Running the program 5 times to see if "Average Waiting Time" remains consistent.
+Testing procedure:
+for i in {1..5}; do java SchedulerSimulationSync; done
 
 **Results**: 
-(Show that running multiple times produces consistent, correct results)
+
 
 **Why synchronization is necessary**: 
 (Explain what race conditions COULD occur without synchronization, even if you didn't observe them. Explain which shared resources need protection and why.)
-
+results: The output was consistent and mathematically correct every time.
 **Conclusion**: 
 
 ---
 
-### Test 2: Exception Testing
-**What I tested**: Checking for ConcurrentModificationException
-
-**Testing procedure**: 
-
-**Results**: 
-
-**What this proves**: 
+Test 2: Exception Testing
+What I tested: Absence of ConcurrentModificationException during log access.
+Results: Zero crashes or exceptions over multiple long-running tests.
 
 ---
 
@@ -247,22 +212,13 @@ Document your development process with **minimum 3 entries** showing progression
 
 ---
 
-## Part 5: Reflection and Learning
-
-### What I learned about synchronization:
-
-[6-8 sentences about key concepts, challenges, insights]
-
+## Part 5: Reflection and I discovered that the foundation of dependable multi-threaded software is synchronization. Without it, data becomes erratic and difficult-to-replicate "ghost" errors emerge. ReentrantLock and Semaphore are two solutions that offer an organized approach to managing shared resources. I also discovered that a crucial best practice to prevent deadlocks is to put the unlock() function in a finally block.
 ---
 
 ### Real-world applications:
 
-Give TWO examples where synchronization is critical:
-
-**Example 1**: 
-
-**Example 2**: 
-
+Example 1: Banking systems where multiple transactions must update a single account balance without error.
+Example 2: Online ticket booking systems where only one user can buy the last seat at a time.
 ---
 
 ### How I would explain synchronization to others:
@@ -273,31 +229,27 @@ Give TWO examples where synchronization is critical:
 
 ## Part 6: GitHub Repository Information
 
-**Repository URL**: 
+**Repository URL**: https://github.com/zeed66/OS-Assignment3-ZEED-ALHODAIB.git
 
-**Number of commits**: 
+**Number of commits**: 7
 
 **Commit messages**: 
-1. 
-2. 
-3. 
-4. 
+1. Update student ID in SchedulerSimulationSync.java
+2. Add synchronization mechanisms using ReentrantLock and Semaphore
+3. Add synchronization to shared resource methods using ReentrantLock
+   4.Add CPU semaphore acquisition and release in Process run method
+5. Refactor run method for better semaphore management
+6. Refactor process handling and logging in simulation
+7. Refactor synchronization in SchedulerSimulationSync
 
 ---
 
 ## Summary
 
-**Total time spent on assignment**: 
-
-**Key takeaways**: 
-1. 
-2. 
-3. 
-
-**Most challenging aspect**: 
-
-**What I'm most proud of**: 
-
+**Total time spent on assignment**: 6h
+Key takeaways:
+Most challenging aspect: Solving the nested bracket errors in the Java code.
+What I'm most proud of: Implementing a colorful, readable terminal interface that displays simulation results clearly.
 ---
 
 **End of Documentation**
